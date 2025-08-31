@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <title>GSAP — Panel fall animation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        background: #0f1724;
+        color: #fff;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial;
+        padding: 1rem;
+      }
+
+      .container {
+        width: 100%;
+        height: 50vh;
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .bar {
+        align-self: flex-start;
+        will-change: transform;
+        background: linear-gradient(180deg, #4facfe, #00f2fe);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4) inset;
+        transform-origin: left center;
+      }
+
+      .bar:nth-child(1) {
+        height: 50%;
+      }
+      .bar:nth-child(2) {
+        height: 55%;
+      }
+      .bar:nth-child(3) {
+        height: 60%;
+      }
+      .bar:nth-child(4) {
+        height: 65%;
+      }
+      .bar:nth-child(5) {
+        height: 70%;
+      }
+      .bar:nth-child(6) {
+        height: 65%;
+      }
+      .bar:nth-child(7) {
+        height: 60%;
+      }
+      .bar:nth-child(8) {
+        height: 55%;
+      }
+      .bar:nth-child(9) {
+        height: 50%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" id="container">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const container = document.getElementById("container");
+        const bars = gsap.utils.toArray(".bar");
+
+        const WIDTH_DURATION = 1;
+        const WIDTH_STAGGER = 0.1;
+        const FALL_DURATION = 0.6;
+        const FALL_STAGGER = 0.02;
+
+        function runAnimation() {
+          // reset inline styles
+          bars.forEach((b) => {
+            b.style.width = "";
+            b.style.transform = "";
+          });
+
+          const containerWidth = container.clientWidth;
+          const containerHeight = container.clientHeight;
+
+          let gapValue = getComputedStyle(container).gap || "16px";
+          let gapPx = parseFloat(gapValue);
+          if (isNaN(gapPx)) gapPx = 16;
+
+          const totalGap = (bars.length - 1) * gapPx;
+          const finalWidthPx = Math.max(
+            0,
+            (containerWidth - totalGap) / bars.length
+          );
+
+          bars.forEach((b) => {
+            b.style.width = finalWidthPx + "px";
+            b.style.y = "0px";
+          });
+
+          container.offsetWidth;
+
+          const fallDistances = bars.map((b) => {
+            const h = b.offsetHeight;
+            return Math.max(0, containerHeight - h);
+          });
+
+          gsap.set(bars, { scaleX: 0, transformOrigin: "left center", y: 0 });
+
+          // timeline
+          const tl = gsap.timeline();
+
+          tl.to(bars, {
+            scaleX: 1,
+            duration: WIDTH_DURATION,
+            ease: "power2.out",
+            stagger: WIDTH_STAGGER,
+          });
+
+          tl.to(
+            bars,
+            {
+              y: (i) => fallDistances[i] + "px",
+              duration: FALL_DURATION,
+              ease: "bounce.out",
+              stagger: FALL_STAGGER,
+            },
+            ">"
+          );
+        }
+
+        runAnimation();
+
+        let resizeTimer;
+        window.addEventListener("resize", () => {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(runAnimation, 120);
+        });
+      });
+    </script>
+  </body>
+</html>
